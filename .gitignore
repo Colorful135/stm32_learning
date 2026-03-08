@@ -1,8 +1,8 @@
 # 排除整个 CMSIS 和标准库文件夹
-STM32F4_LED/firmware/cmsis/
-STM32F4_LED/firmware/driver/
-STM32F4_LED_flow/firmware/cmsis/
-STM32F4_LED_flow/firmware/driver/
+# 排除所有项目下的 CMSIS 和标准库文件夹（通用规则）
+**/firmware/cmsis/
+**/firmware/device/
+**/firmware/driver/
 STM32F4_Template/firmware/cmsis/
 STM32F4_Template/firmware/driver/
 
