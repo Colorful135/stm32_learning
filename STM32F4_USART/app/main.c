@@ -1,5 +1,6 @@
 #include "stm32f4xx.h"
 #include <string.h> 
+#include <stdio.h>
 static void board_lowlevel_init(void)
 {
 	//开时钟
@@ -14,9 +15,12 @@ static void board_lowlevel_init(void)
 	GPIO_StructInit(&GPIO_Struct);
 		
 	GPIO_Struct.GPIO_Mode = GPIO_Mode_AF;
+	GPIO_Struct.GPIO_Speed = GPIO_High_Speed;
+	GPIO_Struct.GPIO_OType = GPIO_OType_PP;
+	GPIO_Struct.GPIO_PuPd = GPIO_PuPd_UP;
 	GPIO_Struct.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10 ;
 		
-    GPIO_Init(GPIOA, &GPIO_Struct);	
+	GPIO_Init(GPIOA, &GPIO_Struct);	
 	 
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource9,GPIO_AF_USART1);
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource10,GPIO_AF_USART1);
@@ -41,23 +45,43 @@ static void USART_Config(void)
 }
 
 
-static void usart_write(const char str[])
-{
-  int len = strlen(str);
-  for(int i=0;i<len;i++)
-	{
-	  USART_ClearFlag(USART1, USART_FLAG_TC);
-	  USART_SendData(USART1, str[i]);
-	  while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
-    }
-}
+//static void usart_write(const char str[])
+//{
+//  int len = strlen(str);
+//  for(int i=0;i<len;i++)
+//	{
+//	  USART_ClearFlag(USART1, USART_FLAG_TC);
+//	  USART_SendData(USART1, (uint16_t)str[i]);
+//	  while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
+//    }
+//}
 
 int main(void)
 {
-  board_lowlevel_init();
-  GPIO_Config();
-  USART_Config();
-  char str1[] = "Hello USART \n"; 
-  usart_write(str1);
-  while (1);
+	 board_lowlevel_init();
+	 GPIO_Config();
+	 USART_Config();
+	 printf("Hello USART \n");
+	  while(1)
+	  {		  
+	//等待读取数据	
+	 USART_ClearFlag(USART1, USART_FLAG_RXNE);
+	 while (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == RESET);
+	//读取传入数据	
+	 uint8_t c =(uint8_t)USART_ReceiveData(USART1); //强转是因为串口通信的标准配置是8位数据位
+	 //输出读到的数据
+	 printf("%c ASCII:%d\n",c,c);
+	  }
+	
+}
+
+int fputc(int c , FILE *stream)
+{
+ (void)stream; //代表没有使用到stream这个参数，不让编译器报warning
+	
+  USART_ClearFlag(USART1, USART_FLAG_TC);
+  USART_SendData(USART1, (uint16_t)c);
+  while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
+
+  return c;
 }
