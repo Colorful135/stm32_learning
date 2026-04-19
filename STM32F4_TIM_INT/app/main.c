@@ -36,10 +36,12 @@ int main(void)
 	
 	NVIC_Init(&NVIC_InitStruct);
 	
+	board_lowlevel_init();
+	led_init(led2);	
+	
 	  while(1)
 		{
-		board_lowlevel_init();
-		led_init(led2);	
+			;
 		}
 }
 
